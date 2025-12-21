@@ -1,13 +1,25 @@
 // src/pages/Dashboard.jsx
 import { Container, Card, Typography, Button, Box, Grid, IconButton, AppBar, Toolbar } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
 import MenuIcon from '@mui/icons-material/Menu';
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true')
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn')
+    setIsLoggedIn(false)
+    navigate('/login')
+  }
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* 簡單的頂部導覽列 */}
@@ -19,9 +31,15 @@ export default function Dashboard() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold', color: 'primary.main' }}>
             ExpenseTracker
           </Typography>
-          <IconButton color="default" onClick={() => navigate('/')}>
-            <LogoutIcon />
-          </IconButton>
+          {!isLoggedIn ? (
+            <IconButton color="inherit" onClick={() => navigate('/login')}>
+              <LoginIcon />
+            </IconButton>
+          ) : (
+            <IconButton color="inherit" onClick={handleLogout}>
+              <LogoutIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
 
