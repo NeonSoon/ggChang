@@ -6,10 +6,25 @@ import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import MenuIcon from '@mui/icons-material/Menu';
+import axios from 'axios'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [records, setRecords] = useState([]) // 儲存支出紀錄
+  const [totalAmount, setTotalAmount] = useState(0) // 儲存總金額
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('https://ttxklr1893.execute-api.ap-southeast-1.amazonaws.com/prod/expenses');
+      setRecords(response.data.items || []);
+      
+      const sum = (response.data.items || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
+      setTotalAmount(sum);
+    } catch (error) {
+      console.error("抓取失敗:", error);
+    }
+  };
 
   useEffect(() => {
     setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true')
@@ -56,7 +71,7 @@ export default function Dashboard() {
         >
           <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>目前餘額</Typography>
           <Typography variant="h2" component="div" fontWeight="bold">
-            $12,500
+            ${totalAmount}
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.8, mt: 1 }}>
             + $2,300 本月收入
@@ -70,13 +85,15 @@ export default function Dashboard() {
         </Box>
 
         {/* 這裡可以放紀錄列表，目前先留空或放個佔位符 */}
-        <Card sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box>
-                <Typography fontWeight="500">午餐 - 牛肉麵</Typography>
-                <Typography variant="caption" color="text.secondary">今天 12:30</Typography>
-            </Box>
-            <Typography color="error" fontWeight="bold">-$150</Typography>
-        </Card>
+        {records.map((item, index) => (
+  <Card key={index} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box>
+      <Typography fontWeight="500">{item.description}</Typography>
+      <Typography variant="caption" color="text.secondary">{item.date}</Typography>
+    </Box>
+    <Typography color="error" fontWeight="bold">-${item.amount}</Typography>
+  </Card>
+))}
 
         {/* 懸浮按鈕 (FAB) 風格的 Add 按鈕，或是寬版按鈕 */}
         <Button
